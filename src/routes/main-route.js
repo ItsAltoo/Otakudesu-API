@@ -2,6 +2,7 @@ import express from "express";
 import { fetchOngoingAnime } from "../controllers/ongoing-anime.js";
 import { fetchCompleteAnime } from "../controllers/complete-anime.js";
 import { fetchAnimeDetails } from "../controllers/anime.js";
+import { fetchAnimeStream } from "../controllers/anime-stream.js";
 
 const router = express.Router();
 
@@ -10,6 +11,7 @@ router
   .get("/ongoing-anime/:page", fetchOngoingAnime)
   .get("/complete-anime", fetchCompleteAnime)
   .get("/complete-anime/:page", fetchCompleteAnime)
-  .get("/anime/:id", fetchAnimeDetails);
+  .get("/anime/:id", fetchAnimeDetails)
+  .get("/episode/:id", fetchAnimeStream)
   
 export default router;

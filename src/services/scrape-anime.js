@@ -1,17 +1,12 @@
-// services/scrape-anime.js
-
 import axios from "axios";
 import { load } from "cheerio";
 
-// 1. Jadikan fungsi ini ASYNC untuk menggunakan await
 export const scrapeAnime = async (url) => {
   try {
-    // 2. TUNGGU (await) hasil dari axios
     const response = await axios.get(url);
     const html = response.data;
     const $ = load(html);
 
-    // Variabel ini akan menjadi OBJEK, bukan array, karena kita hanya scrape satu halaman detail
     const animeData = {};
 
     const venser = $("div.venser").each((i, element) => {
@@ -26,12 +21,7 @@ export const scrapeAnime = async (url) => {
       animeData.synopsis = $(element).find("div.sinopc p").text().trim();
     });
 
-    // Ambil data utama
-
-    // 3. Buat objek kosong untuk menampung detail info
-    const details = {};
-
-    // Iterasi untuk mengisi objek 'details'
+    const detailData = {};
     venser.find("div.infozingle p").each((i, el) => {
       const key = $(el).find("b").text().trim();
       let value = $(el).find("span").text().trim();
@@ -39,15 +29,49 @@ export const scrapeAnime = async (url) => {
 
       if (key) {
         const formattedKey = key.toLowerCase().replace(/ /g, "_");
-        // 4. Isi objek 'details', bukan 'animeData'
-        details[formattedKey] = value;
+        detailData[formattedKey] = value;
       }
     });
 
-    // 5. Gabungkan semua data menjadi satu objek
+    const batchData = {};
+    venser
+      .find("div.episodelist ul li span a")
+      .eq(0)
+      .each((i, el) => {
+        batchData.title = $(el).text().trim();
+        const fullHref = $(el).attr("href") || "";
+        batchData.href = new URL(fullHref).pathname;
+      });
+
+    const episodeData = {};
+    venser
+      .find("div.episodelist ")
+      .eq(1)
+      .each((i, el) => {
+        episodeData.heading = $(el)
+          .find("div.smokelister span.monktit")
+          .text()
+          .trim();
+
+        const episodes = [];
+        episodeData.episodes_list = $(el)
+          .find("ul li")
+          .each((j, li) => {
+            const epTitle = $(li).find("span a").text().trim();
+            const fullHref = $(li).find("span a").attr("href") || "";
+            const href = new URL(fullHref).pathname;
+            episodes.push({ title: epTitle, href });
+          });
+        episodeData.episodes_list = episodes;
+      });
+
     const finalData = {
       ...animeData,
-      details: details, // Simpan semua detail info dalam properti 'details'
+      detailData: detailData,
+      streaming: {
+        batch: batchData,
+        episode: episodeData,
+      },
     };
 
     return finalData;
