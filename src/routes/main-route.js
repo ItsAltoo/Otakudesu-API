@@ -8,9 +8,9 @@ const router = express.Router();
 
 router
   .get("/ongoing-anime", fetchOngoingAnime)
-  .get("/ongoing-anime/:page", fetchOngoingAnime)
+  .get("/ongoing-anime/page/:page", fetchOngoingAnime)
   .get("/complete-anime", fetchCompleteAnime)
-  .get("/complete-anime/:page", fetchCompleteAnime)
+  .get("/complete-anime/page/:page", fetchCompleteAnime)
   .get("/anime/:id", fetchAnimeDetails)
   .get("/episode/:id", fetchAnimeStream)
   
