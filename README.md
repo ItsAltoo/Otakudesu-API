@@ -1,0 +1,401 @@
+# Altnime Stream API
+
+API untuk scraping data anime dari website streaming anime. API ini menyediakan informasi tentang anime yang sedang tayang (ongoing), anime yang sudah tamat (complete), detail anime, dan link streaming.
+
+## 📋 Daftar Isi
+
+- [Fitur](#fitur)
+- [Teknologi](#teknologi)
+- [Instalasi](#instalasi)
+- [Konfigurasi](#konfigurasi)
+- [Cara Menjalankan](#cara-menjalankan)
+- [Endpoint API](#endpoint-api)
+- [Contoh Response](#contoh-response)
+- [Cara Kerja](#cara-kerja)
+- [Struktur Proyek](#struktur-proyek)
+
+## ✨ Fitur
+
+- ✅ Mendapatkan daftar anime ongoing (yang sedang tayang)
+- ✅ Mendapatkan daftar anime complete (yang sudah tamat)
+- ✅ Mendapatkan detail informasi anime
+- ✅ Mendapatkan link streaming episode anime
+- ✅ Mendapatkan link download anime
+- ✅ Pagination support untuk daftar anime
+- ✅ Web scraping menggunakan Cheerio
+
+## 🛠 Teknologi
+
+- **Node.js** - Runtime JavaScript
+- **Express.js** - Web framework
+- **Axios** - HTTP client untuk fetching data
+- **Cheerio** - Library untuk parsing dan scraping HTML
+- **dotenv** - Environment variable management
+
+## 📦 Instalasi
+
+1. Clone repository ini:
+
+```bash
+git clone <repository-url>
+cd altnime-stream-api
+```
+
+2. Install dependencies menggunakan pnpm (atau npm/yarn):
+
+```bash
+pnpm install
+```
+
+atau
+
+```bash
+npm install
+```
+
+## ⚙️ Konfigurasi
+
+1. Buat file `.env` di root folder:
+
+```env
+BASE_URL=https://example-anime-site.com
+```
+
+2. Ganti `https://example-anime-site.com` dengan URL website anime yang ingin di-scrape.
+
+## 🚀 Cara Menjalankan
+
+### Development Mode
+
+```bash
+pnpm dev
+```
+
+atau
+
+```bash
+npm run dev
+```
+
+### Production Mode
+
+```bash
+node src/index.js
+```
+
+Server akan berjalan di `http://localhost:3000`
+
+## 📡 Endpoint API
+
+### Base URL
+
+```
+http://localhost:3000/api
+```
+
+### 1. Ongoing Anime
+
+#### GET `/ongoing-anime`
+
+Mendapatkan daftar anime ongoing halaman pertama.
+
+**Request:**
+
+```http
+GET /api/ongoing-anime
+```
+
+**Response:**
+
+```json
+{
+  "message": "Ongoing anime fetched successfully",
+  "page": 1,
+  "data": [...]
+}
+```
+
+#### GET `/ongoing-anime/page/:page`
+
+Mendapatkan daftar anime ongoing dengan pagination.
+
+**Request:**
+
+```http
+GET /api/ongoing-anime/page/2
+```
+
+**Parameters:**
+
+- `page` (number) - Nomor halaman yang ingin diakses
+
+### 2. Complete Anime
+
+#### GET `/complete-anime`
+
+Mendapatkan daftar anime complete halaman pertama.
+
+**Request:**
+
+```http
+GET /api/complete-anime
+```
+
+#### GET `/complete-anime/page/:page`
+
+Mendapatkan daftar anime complete dengan pagination.
+
+**Request:**
+
+```http
+GET /api/complete-anime/page/3
+```
+
+**Parameters:**
+
+- `page` (number) - Nomor halaman yang ingin diakses
+
+### 3. Anime Details
+
+#### GET `/anime/:id`
+
+Mendapatkan detail informasi anime tertentu.
+
+**Request:**
+
+```http
+GET /api/anime/naruto-shippuden
+```
+
+**Parameters:**
+
+- `id` (string) - ID atau slug anime
+
+**Response berisi:**
+
+- Judul anime
+- Sub judul
+- Gambar cover
+- Sinopsis
+- Detail (genre, status, studio, dll)
+- Link batch download
+- Daftar episode
+
+### 4. Episode Stream
+
+#### GET `/episode/:id`
+
+Mendapatkan link streaming dan download untuk episode tertentu.
+
+**Request:**
+
+```http
+GET /api/episode/naruto-shippuden-episode-1
+```
+
+**Parameters:**
+
+- `id` (string) - ID atau slug episode
+
+**Response berisi:**
+
+- Judul episode
+- Pagination (episode sebelumnya/selanjutnya)
+- Link streaming
+- Link download dengan berbagai kualitas
+
+## 📝 Contoh Response
+
+### Ongoing/Complete Anime List
+
+```json
+[
+  {
+    "title": "One Piece Episode 1234",
+    "episode": "Episode 1234",
+    "imageUrl": "https://example.com/image.jpg",
+    "epzTipe": "TV",
+    "newNime": "New",
+    "href": "/anime/one-piece-episode-1234"
+  },
+  ...
+]
+```
+
+### Anime Details
+
+```json
+{
+  "heading": "Naruto Shippuden",
+  "subHeading": "Naruto: Shippuuden",
+  "imageUrl": "https://example.com/naruto.jpg",
+  "synopsis": "Naruto Uzumaki, is a loud, hyperactive...",
+  "detailData": {
+    "judul": "Naruto Shippuden",
+    "japanese": "ナルト- 疾風伝",
+    "skor": "8.26",
+    "produser": "TV Tokyo, Aniplex, KSS",
+    "tipe": "TV",
+    "status": "Completed",
+    "total_episode": "500",
+    "durasi": "23 min. per ep.",
+    "tanggal_rilis": "Feb 15, 2007",
+    "studio": "Pierrot",
+    "genre": "Action, Adventure, Comedy, Drama, Fantasy, Shounen"
+  },
+  "streaming": {
+    "batch": {
+      "title": "Batch Download",
+      "href": "/batch/naruto-shippuden-batch"
+    },
+    "episode": {
+      "heading": "Episode List",
+      "episodes_list": [
+        {
+          "title": "Episode 001",
+          "href": "/episode/naruto-shippuden-episode-1"
+        },
+        ...
+      ]
+    }
+  }
+}
+```
+
+### Episode Stream
+
+```json
+{
+  "title": "Naruto Shippuden Episode 1",
+  "pagination": [
+    {
+      "title": "Previous Episode",
+      "href": "/episode/naruto-episode-220"
+    },
+    {
+      "title": "Next Episode",
+      "href": "/episode/naruto-shippuden-episode-2"
+    }
+  ],
+  "stream_links": "https://example.com/embed/player.php?id=xxx",
+  "download_links": [
+    {
+      "title": "360p",
+      "quality": "MP4 360p",
+      "link": "https://download-link.com/360p.mp4"
+    },
+    {
+      "title": "480p",
+      "quality": "MP4 480p",
+      "link": "https://download-link.com/480p.mp4"
+    },
+    {
+      "title": "720p",
+      "quality": "MP4 720p",
+      "link": "https://download-link.com/720p.mp4"
+    }
+  ]
+}
+```
+
+## 🔧 Cara Kerja
+
+### Arsitektur API
+
+API ini menggunakan arsitektur MVC (Model-View-Controller) sederhana:
+
+```
+Request → Route → Controller → Service → Scraping → Response
+```
+
+### Flow Kerja:
+
+1. **Request Masuk**: Client mengirim HTTP request ke endpoint API
+2. **Routing**: Express router menerima request dan mengarahkan ke controller yang sesuai
+3. **Controller**: Controller memproses request dan memanggil service yang diperlukan
+4. **Service (Scraping)**: Service melakukan web scraping menggunakan:
+   - **Axios**: Untuk mengambil HTML dari website target
+   - **Cheerio**: Untuk parsing dan ekstraksi data dari HTML
+5. **Response**: Data yang sudah di-extract dikirim kembali ke client dalam format JSON
+
+### Komponen Utama:
+
+#### 1. Routes (`main-route.js`)
+
+Mendefinisikan semua endpoint API dan menghubungkannya dengan controller yang sesuai.
+
+#### 2. Controllers
+
+- `ongoing-anime.js` - Menangani request untuk anime ongoing
+- `complete-anime.js` - Menangani request untuk anime complete
+- `anime.js` - Menangani request untuk detail anime
+- `anime-stream.js` - Menangani request untuk streaming episode
+
+#### 3. Services (Scraping)
+
+- `scrape-anime-list.js` - Scraping daftar anime (ongoing/complete)
+  - Mengambil HTML dari URL
+  - Extract data: judul, episode, gambar, tipe, status
+- `scrape-anime.js` - Scraping detail anime
+  - Mengambil informasi lengkap anime
+  - Extract metadata, sinopsis, genre, studio, dll
+  - Extract daftar episode dan link batch
+- `scrape-stream.js` - Scraping link streaming
+  - Mengambil link streaming dari embed iframe
+  - Extract link download dengan berbagai kualitas
+  - Extract navigasi episode (prev/next)
+
+### Proses Scraping:
+
+1. **HTTP Request**: Axios mengirim GET request ke URL target
+2. **HTML Parsing**: Cheerio load HTML response
+3. **Data Extraction**: Menggunakan CSS selector untuk extract data:
+   ```javascript
+   const title = $(".jdlflm").text().trim();
+   const imageUrl = $("img").attr("src");
+   ```
+4. **Data Transformation**: Membersihkan dan format data
+5. **Return JSON**: Mengembalikan data dalam format JSON yang terstruktur
+
+## 📁 Struktur Proyek
+
+```
+altnime-stream-api/
+├── src/
+│   ├── index.js                      # Entry point aplikasi
+│   ├── routes/
+│   │   └── main-route.js            # Definisi semua route API
+│   ├── controllers/
+│   │   ├── anime-stream.js          # Controller untuk streaming
+│   │   ├── anime.js                 # Controller untuk detail anime
+│   │   ├── complete-anime.js        # Controller untuk anime complete
+│   │   └── ongoing-anime.js         # Controller untuk anime ongoing
+│   └── services/
+│       ├── scrape-anime-list.js     # Service scraping list anime
+│       ├── scrape-anime.js          # Service scraping detail anime
+│       └── scrape-stream.js         # Service scraping streaming links
+├── .env                             # Environment variables
+├── package.json                     # Dependencies dan scripts
+├── LICENSE                          # License file
+└── README.md                        # Dokumentasi
+```
+
+## ⚠️ Catatan Penting
+
+- API ini melakukan web scraping, pastikan Anda memiliki izin untuk scraping website target
+- Gunakan dengan bijak dan patuhi robots.txt dari website target
+- Scraping dapat berhenti bekerja jika struktur HTML website target berubah
+- Untuk production, pertimbangkan untuk menambahkan rate limiting dan caching
+- Error handling sudah diimplementasikan untuk setiap endpoint
+
+## 📄 License
+
+Lihat file [LICENSE](LICENSE) untuk informasi lebih lanjut.
+
+## 🤝 Kontribusi
+
+Kontribusi selalu diterima! Silakan buat pull request atau issue untuk perbaikan dan saran.
+
+---
+
+**Disclaimer**: API ini dibuat untuk tujuan pembelajaran. Pastikan untuk mematuhi terms of service dari website yang di-scrape.
