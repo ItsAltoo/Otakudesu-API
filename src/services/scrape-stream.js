@@ -31,21 +31,27 @@ export const scrapeAnimeStream = async (url) => {
 
       const downloadLinks = [];
       $(el)
-        .find("div.download ul")
+        .find("div.download ul li")
         .each((k, d) => {
-          $(el)
-          .find("li")
-          .each((l, d) => {
-              const title = $(d).find("strong").text().trim();
-              const quality = $(d).find("a").text().trim();
-              const linkHref = $(d).find("a").attr("href") || "";
+          const quality = $(d).find("strong").text().trim();
+          const size = $(d).find("i").text().trim();
 
-              downloadLinks.push({
-                title: title,
-                quality: quality,
-                link: linkHref,
+          const servers = [];
+          $(d)
+            .find("a")
+            .each((i, a) => {
+              const $a = $(a);
+              servers.push({
+                name: $a.text().trim(),
+                link: $a.attr("href"),
               });
             });
+
+          downloadLinks.push({
+            quality,
+            size,
+            servers,
+          });
         });
       animeData.download_links = downloadLinks;
     });
