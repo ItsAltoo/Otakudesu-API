@@ -204,6 +204,28 @@ GET /api/episode/naruto-shippuden-episode-1
 - Link streaming
 - Link download dengan berbagai kualitas
 
+### 5. Batch Download
+
+#### GET `/batch/:id`
+
+Mendapatkan link batch download untuk anime tertentu (download semua episode sekaligus).
+
+**Request:**
+
+```http
+GET /api/batch/naruto-shippuden-batch
+```
+
+**Parameters:**
+
+- `id` (string) - ID atau slug batch anime
+
+**Response berisi:**
+
+- Daftar batch dengan berbagai format dan kualitas
+- Link download dari berbagai server (Google Drive, ZippyShare, dll)
+- Informasi ukuran file untuk setiap kualitas
+
 ## 📝 Contoh Response
 
 ### Ongoing/Complete Anime List
@@ -298,6 +320,51 @@ GET /api/episode/naruto-shippuden-episode-1
 }
 ```
 
+### Batch Download
+
+```json
+[
+  {
+    "batch_title": "Batch 480p",
+    "downloads": [
+      {
+        "quality": "480p",
+        "size": "~500MB",
+        "servers": [
+          {
+            "name": "Google Drive",
+            "link": "https://drive.google.com/xxx"
+          },
+          {
+            "name": "ZippyShare",
+            "link": "https://zippyshare.com/xxx"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "batch_title": "Batch 720p",
+    "downloads": [
+      {
+        "quality": "720p",
+        "size": "~1GB",
+        "servers": [
+          {
+            "name": "Google Drive",
+            "link": "https://drive.google.com/xxx"
+          },
+          {
+            "name": "Mega",
+            "link": "https://mega.nz/xxx"
+          }
+        ]
+      }
+    ]
+  }
+]
+```
+
 ## 🔧 Cara Kerja
 
 ### Arsitektur API
@@ -330,6 +397,7 @@ Mendefinisikan semua endpoint API dan menghubungkannya dengan controller yang se
 - `complete-anime.js` - Menangani request untuk anime complete
 - `anime.js` - Menangani request untuk detail anime
 - `anime-stream.js` - Menangani request untuk streaming episode
+- `anime-batch.js` - Menangani request untuk batch download
 
 #### 3. Services (Scraping)
 
@@ -344,6 +412,10 @@ Mendefinisikan semua endpoint API dan menghubungkannya dengan controller yang se
   - Mengambil link streaming dari embed iframe
   - Extract link download dengan berbagai kualitas
   - Extract navigasi episode (prev/next)
+- `scrape-batch.js` - Scraping batch download
+  - Mengambil link batch download
+  - Extract berbagai kualitas dan ukuran file
+  - Extract link download dari berbagai server
 
 ### Proses Scraping:
 
@@ -366,6 +438,7 @@ altnime-stream-api/
 │   ├── routes/
 │   │   └── main-route.js            # Definisi semua route API
 │   ├── controllers/
+│   │   ├── anime-batch.js           # Controller untuk batch download
 │   │   ├── anime-stream.js          # Controller untuk streaming
 │   │   ├── anime.js                 # Controller untuk detail anime
 │   │   ├── complete-anime.js        # Controller untuk anime complete
@@ -373,6 +446,7 @@ altnime-stream-api/
 │   └── services/
 │       ├── scrape-anime-list.js     # Service scraping list anime
 │       ├── scrape-anime.js          # Service scraping detail anime
+│       ├── scrape-batch.js          # Service scraping batch download
 │       └── scrape-stream.js         # Service scraping streaming links
 ├── .env                             # Environment variables
 ├── package.json                     # Dependencies dan scripts
