@@ -9,6 +9,7 @@ const app = express();
 const port = 3000;
 
 app.get("/", (req, res) => {
+  // Redirect to ongoing anime route
   res.redirect("/api/ongoing-anime");
 });
 
