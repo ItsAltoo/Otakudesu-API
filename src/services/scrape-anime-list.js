@@ -3,7 +3,12 @@ import axios from "axios";
 
 export const scrapeAnimeList = async (url) => {
   try {
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
+      },
+    });
     const html = response.data;
     const $ = load(html);
 
@@ -16,7 +21,14 @@ export const scrapeAnimeList = async (url) => {
       const epzTipe = $(element).find("div.epztipe").text().trim();
       const newNime = $(element).find("div.newnime").text().trim();
       const fullHref = $(element).find("div.thumb a").attr("href") || "";
-      const endpoint = new URL(fullHref).pathname;
+      const endpoint = "";
+      try {
+        if (fullHref) {
+          endpoint = new URL(fullHref).pathname;
+        }
+      } catch (error) {
+        endpoint = fullHref;
+      }
 
       animeList.push({
         title,

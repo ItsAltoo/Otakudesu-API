@@ -11,10 +11,12 @@ app.get("/", (req, res) => {
   res.redirect("/api/ongoing-anime");
 });
 
-app.use("/api", router);
+if (process.env.NODE_ENV !== "production") {
+  app.listen(port, () => {
+    console.log(`Example app listening on port ${port}`);
+  });
+}
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
+app.use("/api", router);
 
 export default app;
