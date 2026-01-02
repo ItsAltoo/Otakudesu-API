@@ -28,11 +28,10 @@ export const scrapeAnimeStream = async (url) => {
         });
       animeData.pagination = pagination;
 
-      const streamLinks = $(el)
-        .find("div.responsive-embed-stream iframe")
-        .attr("src")
-        .trim();
-      animeData.stream_links = streamLinks;
+      const streamIframe = $(el).find("div.responsive-embed-stream iframe");
+      const streamLinks =
+        streamIframe.length > 0 ? streamIframe.attr("src") : "";
+      animeData.stream_links = streamLinks || "";
 
       const downloadLinks = [];
       $(el)
@@ -63,7 +62,7 @@ export const scrapeAnimeStream = async (url) => {
 
     return animeData;
   } catch (err) {
-    console.log("Error");
-    throw new Error("Failed scrape");
+    console.error("Error scraping anime stream:", err.message);
+    throw new Error("Failed to scrape anime stream: " + err.message);
   }
 };
