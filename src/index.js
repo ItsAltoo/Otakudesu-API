@@ -2,14 +2,12 @@ import express from "express";
 import dotenv from "dotenv";
 import router from "./routes/main-route.js";
 
-// load environment variables from .env
 dotenv.config();
 
 const app = express();
 const port = 3000;
 
 app.get("/", (req, res) => {
-  // Redirect to ongoing anime route
   res.redirect("/api/ongoing-anime");
 });
 
@@ -18,3 +16,5 @@ app.use("/api", router);
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
+
+export default app;
