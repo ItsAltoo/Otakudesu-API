@@ -3,10 +3,11 @@ import { load } from "cheerio";
 
 export const scrapeAnime = async (url) => {
   try {
-    const response = await axios.get(url,{
+    const response = await axios.get(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-      }
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      },
     });
     const html = response.data;
     const $ = load(html);
@@ -38,14 +39,20 @@ export const scrapeAnime = async (url) => {
     });
 
     const batchData = {};
-    venser
-      .find("div.episodelist ul li span a")
-      .eq(0)
-      .each((i, el) => {
+    const batchElement = venser.find("div.episodelist ul li span a").eq(0);
+    if (batchElement.length > 0) {
+      batchElement.each((i, el) => {
         batchData.title = $(el).text().trim();
         const fullHref = $(el).attr("href") || "";
-        batchData.href = new URL(fullHref).pathname;
+        if (fullHref) {
+          try {
+            batchData.href = new URL(fullHref).pathname;
+          } catch (e) {
+            batchData.href = fullHref;
+          }
+        }
       });
+    }
 
     const episodeData = {};
     venser
@@ -63,7 +70,14 @@ export const scrapeAnime = async (url) => {
           .each((j, li) => {
             const epTitle = $(li).find("span a").text().trim();
             const fullHref = $(li).find("span a").attr("href") || "";
-            const href = new URL(fullHref).pathname;
+            let href = "";
+            if (fullHref) {
+              try {
+                href = new URL(fullHref).pathname;
+              } catch (e) {
+                href = fullHref;
+              }
+            }
             episodes.push({ title: epTitle, href });
           });
         episodeData.episodes_list = episodes;
