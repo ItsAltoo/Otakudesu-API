@@ -21,14 +21,7 @@ export const scrapeAnimeList = async (url) => {
       const epzTipe = $(element).find("div.epztipe").text().trim();
       const newNime = $(element).find("div.newnime").text().trim();
       const fullHref = $(element).find("div.thumb a").attr("href") || "";
-      const endpoint = "";
-      try {
-        if (fullHref) {
-          endpoint = new URL(fullHref).pathname;
-        }
-      } catch (error) {
-        endpoint = fullHref;
-      }
+      const endpoint = new URL(fullHref).pathname;
 
       animeList.push({
         title,
