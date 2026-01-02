@@ -5,16 +5,18 @@ import router from "./routes/main-route.js";
 dotenv.config();
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-app.get("/" || "/api", (req, res) => {
+app.use("/api", router);
+
+app.get("/", (req, res) => {
   res.redirect("/api/ongoing-anime");
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
-
-app.use("/api", router);
+if (process.env.NODE_ENV !== "production") {
+  app.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+  });
+}
 
 export default app;
