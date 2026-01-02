@@ -1,21 +1,13 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "/src/index.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
+      "source": "/api/(.*)",
+      "destination": "/src/index.js"
+    },
     {
-      "src": "/(.*)",
-      "dest": "/src/index.js"
-    }
-  ],
-  "crons": [
-    {
-      "path": "/",
-      "schedule": "0 0 * * *"
+      "source": "/(.*)",
+      "destination": "/src/index.js"
     }
   ]
 }
