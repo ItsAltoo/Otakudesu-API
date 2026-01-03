@@ -1,14 +1,19 @@
 import axios from "axios";
 import { load } from "cheerio";
 import { getRequestHeaders } from "../utils/request-headers.js";
+import { gotScraping } from "got-scraping";
 
 export const scrapeBatch = async (url) => {
   try {
-    const res = await axios.get(url, {
-      headers: getRequestHeaders(),
-      timeout: 15000,
+    const res = await gotScraping({
+      url: url,
+      headerGeneratorOptions: {
+        browsers: [{ name: "chrome", minVersion: 110 }],
+        devices: ["desktop"],
+        locales: ["en-US", "id-ID"],
+      },
     });
-    const html = res.data;
+    const html = res.body;
     const $ = load(html);
 
     const batchList = [];

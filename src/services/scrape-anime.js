@@ -1,14 +1,20 @@
 import axios from "axios";
 import { load } from "cheerio";
 import { getRequestHeaders } from "../utils/request-headers.js";
+import { gotScraping } from "got-scraping";
 
 export const scrapeAnime = async (url) => {
   try {
-    const response = await axios.get(url, {
-      headers: getRequestHeaders(),
-      timeout: 15000,
+    const response = await gotScraping({
+      url: url,
+      headerGeneratorOptions: {
+        browsers: [{ name: "chrome", minVersion: 110 }],
+        devices: ["desktop"],
+        locales: ["en-US", "id-ID"],
+      },
     });
-    const html = response.data;
+    
+    const html = response.body;
     const $ = load(html);
 
     const animeData = {};
