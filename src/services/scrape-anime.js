@@ -1,20 +1,23 @@
 import axios from "axios";
 import { load } from "cheerio";
 import { getRequestHeaders } from "../utils/request-headers.js";
-import { gotScraping } from "got-scraping";
+import puppeteer from "puppeteer";
 
 export const scrapeAnime = async (url) => {
+  let browser;
   try {
-    const response = await gotScraping({
-      url: url,
-      headerGeneratorOptions: {
-        browsers: [{ name: "chrome", minVersion: 110 }],
-        devices: ["desktop"],
-        locales: ["en-US", "id-ID"],
-      },
+    browser = await puppeteer.launch({
+      headless: "new",
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
-    
-    const html = response.body;
+
+    const page = await browser.newPage();
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+    );
+    await page.goto(url, { waitUntil: "networkidle2" });
+
+    const html = await page.content();
     const $ = load(html);
 
     const animeData = {};
@@ -101,5 +104,9 @@ export const scrapeAnime = async (url) => {
   } catch (err) {
     console.error("Error scraping anime data:", err);
     throw new Error("Failed to scrape anime data");
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 };
