@@ -1,112 +1,87 @@
-import axios from "axios";
 import { load } from "cheerio";
-import { getRequestHeaders } from "../utils/request-headers.js";
-import puppeteer from "puppeteer";
+import { getBrowser } from "../utils/browser.js";
 
 export const scrapeAnime = async (url) => {
-  let browser;
+  let browser = null;
   try {
-    browser = await puppeteer.launch({
-      headless: "new",
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-
+    browser = await getBrowser();
     const page = await browser.newPage();
+
     await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     );
-    await page.goto(url, { waitUntil: "networkidle2" });
 
-    const html = await page.content();
-    const $ = load(html);
-
-    const animeData = {};
-
-    const venser = $("div.venser").each((i, element) => {
-      animeData.heading = $(element).find("div.jdlrx h1").text().trim();
-      animeData.subHeading = $(element)
-        .find("div.subheading h2")
-        .eq(0)
-        .text()
-        .trim();
-      animeData.imageUrl =
-        $(element).find("div.fotoanime img").attr("src") || "";
-      animeData.synopsis = $(element).find("div.sinopc p").text().trim();
-    });
-
-    const detailData = {};
-    venser.find("div.infozingle p").each((i, el) => {
-      const key = $(el).find("b").text().trim();
-      let value = $(el).find("span").text().trim();
-      value = value.replace(key, "").replace(":", "").trim();
-
-      if (key) {
-        const formattedKey = key.toLowerCase().replace(/ /g, "_");
-        detailData[formattedKey] = value;
+    await page.setRequestInterception(true);
+    page.on("request", (req) => {
+      if (
+        ["image", "stylesheet", "font", "media"].includes(req.resourceType())
+      ) {
+        req.abort();
+      } else {
+        req.continue();
       }
     });
 
-    const batchData = {};
-    const batchElement = venser.find("div.episodelist ul li span a").eq(0);
-    if (batchElement.length > 0) {
-      batchElement.each((i, el) => {
-        batchData.title = $(el).text().trim();
-        const fullHref = $(el).attr("href") || "";
-        if (fullHref) {
-          try {
-            batchData.href = new URL(fullHref).pathname;
-          } catch (e) {
-            batchData.href = fullHref;
-          }
-        }
-      });
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20000 });
+
+    try {
+      await page.waitForSelector("div.venser", { timeout: 10000 });
+    } catch (e) {
+      throw new Error(
+        "Timeout: Terjebak di Cloudflare atau elemen tidak ditemukan.",
+      );
     }
 
-    const episodeData = {};
-    venser
-      .find("div.episodelist ")
-      .eq(1)
-      .each((i, el) => {
-        episodeData.heading = $(el)
-          .find("div.smokelister span.monktit")
-          .text()
-          .trim();
+    const html = await page.content();
 
-        const episodes = [];
-        episodeData.episodes_list = $(el)
-          .find("ul li")
-          .each((j, li) => {
-            const epTitle = $(li).find("span a").text().trim();
-            const fullHref = $(li).find("span a").attr("href") || "";
-            let href = "";
-            if (fullHref) {
-              try {
-                href = new URL(fullHref).pathname;
-              } catch (e) {
-                href = fullHref;
-              }
-            }
-            episodes.push({ title: epTitle, href });
-          });
-        episodeData.episodes_list = episodes;
+    const $ = load(html);
+    const venser = $("div.venser");
+    const animeData = {};
+
+    animeData.heading = venser.find("div.jdlrx h1").text().trim();
+    animeData.subHeading = venser
+      .find("div.subheading h2")
+      .first()
+      .text()
+      .trim();
+    animeData.imageUrl = venser.find("div.fotoanime img").attr("src") || "";
+    animeData.synopsis = venser.find("div.sinopc p").text().trim();
+
+    const detailData = {};
+    venser.find("div.infozingle p").each((_, el) => {
+      const keyRaw = $(el).find("b").text().trim();
+      let value = $(el).find("span").text().trim();
+      value = value.replace(keyRaw, "").replace(":", "").trim();
+
+      if (keyRaw) {
+        const key = keyRaw.toLowerCase().replace(/ /g, "_");
+        detailData[key] = value;
+      }
+    });
+
+    const episodeData = [];
+    venser.find("div.episodelist ul li").each((_, el) => {
+      const link = $(el).find("span a");
+      const fullUrl = link.attr("href");
+      const endpoint = new URL(fullUrl).pathname;
+      episodeData.push({
+        title: link.text().trim(),
+        endpoint,
       });
+    });
 
-    const finalData = {
-      ...animeData,
-      detailData: detailData,
-      streaming: {
-        batch: batchData,
-        episode: episodeData,
+    return {
+      status: "success",
+      data: {
+        ...animeData,
+        details: detailData,
+        episodes: episodeData,
       },
     };
-
-    return finalData;
   } catch (err) {
-    console.error("Error scraping anime data:", err);
-    throw new Error("Failed to scrape anime data");
+    console.error("Scraping Error:", err.message);
+    throw new Error(err.message || "Failed to scrape");
   } finally {
-    if (browser) {
-      await browser.close();
-    }
+    if (browser) await browser.close();
   }
 };

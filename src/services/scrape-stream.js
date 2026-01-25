@@ -13,7 +13,7 @@ export const scrapeAnimeStream = async (url) => {
         locales: ["en-US", "id-ID"],
       },
     });
-    const html = res.data;
+    const html = res.body;
     const $ = load(html);
 
     const animeData = {};
