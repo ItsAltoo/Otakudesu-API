@@ -7,7 +7,7 @@
     }
   ],
   "functions": {
-    "src/**/*": {
+    "src/**/*.js": {
       "memory": 1024,
       "maxDuration": 30
     }
