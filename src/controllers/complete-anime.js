@@ -6,8 +6,12 @@ export const fetchCompleteAnime = async (req, res) => {
   const paginatedUrl = `${url}/page/${page}`;
 
   try {
-    const animeList = await scrapeAnimeList(paginatedUrl);
-    res.json(animeList);
+    const data = await scrapeAnimeList(paginatedUrl);
+    res.json({
+      message: "Complete anime fetched successfully",
+      page: page,
+      data: data,
+    });
   } catch (error) {
     console.error("Error fetching complete anime:", error);
     res.status(500).json({ error: "Failed to fetch complete anime" });
