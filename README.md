@@ -24,6 +24,42 @@ API untuk scraping data anime dari website streaming anime. API ini menyediakan 
 - ✅ Pagination support untuk daftar anime
 - ✅ Web scraping menggunakan Cheerio
 
+## ⚠️ PERINGATAN PENTING - Pembatasan IP
+
+**API ini TIDAK BISA di-deploy ke layanan cloud (Vercel, Heroku, AWS, dll) karena Otakudesu memiliki proteksi terhadap IP datacenter/VPS!**
+
+### Kenapa Tidak Bisa Di-Deploy?
+
+- **Otakudesu menggunakan proteksi CloudFlare** yang memblokir akses dari IP datacenter, VPS, dan cloud hosting
+- IP dari layanan seperti Vercel, Netlify, Heroku, AWS, Google Cloud, Digital Ocean, dan sejenisnya akan **otomatis diblokir**
+- Website Otakudesu hanya bisa diakses dari **IP residential (IP rumahan)** seperti koneksi WiFi/internet rumah, mobile data, dll
+
+### Di Mana API Ini Bisa Dijalankan?
+
+✅ **BISA:**
+
+- Komputer/laptop lokal dengan koneksi internet rumah
+- Server lokal di jaringan rumah (home server)
+- Raspberry Pi atau mini PC di rumah dengan internet residential
+- VPS dengan IP residential (sangat jarang dan mahal)
+
+❌ **TIDAK BISA:**
+
+- Vercel, Netlify, Railway, Render
+- Heroku, AWS, Google Cloud Platform
+- Digital Ocean, Vultr, Linode
+- Semua VPS dan cloud hosting pada umumnya
+
+### Solusi Alternatif
+
+Jika ingin mengakses API ini dari luar jaringan rumah:
+
+1. **Jalankan di komputer rumah** dan gunakan port forwarding pada router
+2. Gunakan **ngrok** atau **Cloudflare Tunnel** untuk expose API lokal
+3. Gunakan **Dynamic DNS** agar bisa diakses meski IP rumah berubah
+
+⚠️ **Catatan Keamanan**: Berhati-hati saat expose API lokal ke internet publik. Gunakan authentication dan rate limiting.
+
 ## 🛠 Teknologi
 
 - **Node.js** - Runtime JavaScript
@@ -65,6 +101,8 @@ BASE_URL=https://example-anime-site.com
 
 ## 🚀 Cara Menjalankan
 
+**⚠️ PENTING**: API ini **HANYA** bisa dijalankan di komputer/server dengan **IP residential (IP rumahan)**. Tidak bisa di-deploy ke cloud hosting!
+
 ### Development Mode
 
 ```bash
@@ -77,13 +115,58 @@ atau
 npm run dev
 ```
 
-### Production Mode
+### Production Mode (Lokal)
 
 ```bash
 node src/index.js
 ```
 
 Server akan berjalan di `http://localhost:3000`
+
+### Menjalankan Sebagai Service (Linux/Mac)
+
+Untuk menjalankan API 24/7 di komputer/server rumah, gunakan PM2:
+
+```bash
+# Install PM2
+npm install -g pm2
+
+# Jalankan dengan PM2
+pm2 start src/index.js --name "otakudesu-api"
+
+# Auto-restart saat komputer reboot
+pm2 startup
+pm2 save
+```
+
+### Mengakses dari Luar Jaringan (Opsional)
+
+Jika ingin mengakses API dari luar rumah:
+
+**Opsi 1 - Ngrok (Paling Mudah)**
+
+```bash
+# Install ngrok
+npm install -g ngrok
+
+# Jalankan ngrok
+ngrok http 3000
+```
+
+**Opsi 2 - Cloudflare Tunnel**
+
+```bash
+# Install cloudflared
+# Ikuti dokumentasi: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/
+
+cloudflared tunnel --url http://localhost:3000
+```
+
+**Opsi 3 - Port Forwarding**
+
+- Buka router settings
+- Forward port 3000 ke IP lokal komputer
+- Gunakan Dynamic DNS (No-IP, DuckDNS, dll)
 
 ## 📡 Endpoint API
 
@@ -456,11 +539,31 @@ altnime-stream-api/
 
 ## ⚠️ Catatan Penting
 
-- API ini melakukan web scraping, pastikan Anda memiliki izin untuk scraping website target
+### Pembatasan Deployment
+
+- **API ini TIDAK BISA di-deploy ke cloud hosting** (Vercel, Heroku, AWS, dll) karena Otakudesu memblokir IP datacenter
+- **Hanya bisa dijalankan di komputer/server dengan IP residential** (koneksi internet rumah)
+- Jika di-deploy ke cloud, akan mendapat error **403 Forbidden** atau **Cloudflare protection page**
+
+### Web Scraping
+
+- API ini melakukan web scraping dari website Otakudesu
 - Gunakan dengan bijak dan patuhi robots.txt dari website target
 - Scraping dapat berhenti bekerja jika struktur HTML website target berubah
-- Untuk production, pertimbangkan untuk menambahkan rate limiting dan caching
+- Pertimbangkan untuk menambahkan rate limiting agar tidak membebani server target
+
+### Keamanan dan Performance
+
+- Jika expose ke internet, **WAJIB** tambahkan authentication
+- Implementasikan rate limiting untuk mencegah abuse
+- Gunakan caching (Redis/memory) untuk mengurangi request ke Otakudesu
 - Error handling sudah diimplementasikan untuk setiap endpoint
+
+### Legal
+
+- API ini dibuat untuk tujuan pembelajaran
+- Data yang di-scrape adalah milik Otakudesu
+- Gunakan API ini dengan bertanggung jawab dan hormati hak cipta konten
 
 ## 📄 License
 

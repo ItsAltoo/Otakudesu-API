@@ -1,38 +1,10 @@
 import { load } from "cheerio";
-import { getBrowser } from "../utils/browser.js";
+import axios from "axios";
 
 export const scrapeAnime = async (url) => {
-  let browser = null;
   try {
-    browser = await getBrowser();
-    const page = await browser.newPage();
-
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    );
-
-    await page.setRequestInterception(true);
-    page.on("request", (req) => {
-      if (
-        ["image", "stylesheet", "font", "media"].includes(req.resourceType())
-      ) {
-        req.abort();
-      } else {
-        req.continue();
-      }
-    });
-
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20000 });
-
-    try {
-      await page.waitForSelector("div.venser", { timeout: 10000 });
-    } catch (e) {
-      throw new Error(
-        "Timeout: Terjebak di Cloudflare atau elemen tidak ditemukan.",
-      );
-    }
-
-    const html = await page.content();
+    const res = await axios.get(url)
+    const html = res.data
 
     const $ = load(html);
     const venser = $("div.venser");
@@ -64,6 +36,7 @@ export const scrapeAnime = async (url) => {
       const link = $(el).find("span a");
       const fullUrl = link.attr("href");
       const endpoint = new URL(fullUrl).pathname;
+      
       episodeData.push({
         title: link.text().trim(),
         endpoint,

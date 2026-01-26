@@ -1,25 +1,15 @@
 import { load } from "cheerio";
 import axios from "axios";
-import { getRequestHeaders } from "../utils/request-headers.js";
-import { gotScraping } from "got-scraping";
 
 export const scrapeAnimeList = async (url) => {
   try {
-    const response = await gotScraping({
-      url: url,
-      headerGeneratorOptions: {
-        browsers: [{ name: "chrome", minVersion: 110 }],
-        devices: ["desktop"],
-        locales: ["en-US", "id-ID"],
-      },
-    });
-    
-    const html = response.body;
+    const res = await axios.get(url);
+    const html = res.data;
     const $ = load(html);
 
     const animeList = [];
 
-    $("div.detpost").each((index, element) => {
+    $("div.detpost").each((_, element) => {
       const title = $(element).find("h2.jdlflm").text().trim();
       const episode = $(element).find("div.epz").text().trim();
       const imageUrl = $(element).find("img").attr("src") || "";

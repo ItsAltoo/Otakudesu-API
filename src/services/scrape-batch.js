@@ -1,24 +1,15 @@
 import axios from "axios";
 import { load } from "cheerio";
-import { getRequestHeaders } from "../utils/request-headers.js";
-import { gotScraping } from "got-scraping";
 
 export const scrapeBatch = async (url) => {
   try {
-    const res = await gotScraping({
-      url: url,
-      headerGeneratorOptions: {
-        browsers: [{ name: "chrome", minVersion: 110 }],
-        devices: ["desktop"],
-        locales: ["en-US", "id-ID"],
-      },
-    });
-    const html = res.body;
+    const res = await axios.get(url);
+    const html = res.data;
     const $ = load(html);
 
     const batchList = [];
 
-    $("div.batchlink h4").each((index, element) => {
+    $("div.batchlink h4").each((_, element) => {
       const $h4 = $(element);
       const batchTitle = $h4.text().trim();
 
@@ -49,7 +40,6 @@ export const scrapeBatch = async (url) => {
         }
       });
 
-      // Masukkan hasil per-batch ke array utama
       batchList.push({
         batch_title: batchTitle,
         downloads: downloads,
